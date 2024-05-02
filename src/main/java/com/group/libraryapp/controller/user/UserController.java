@@ -2,31 +2,69 @@ package com.group.libraryapp.controller.user;
 
 import com.group.libraryapp.domain.user.User;
 import com.group.libraryapp.dto.user.request.UserCreateRequest;
+import com.group.libraryapp.dto.user.request.UserUpdateRequest;
 import com.group.libraryapp.dto.user.response.UserResponse;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.web.bind.annotation.*;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 public class UserController {
-    private final List<User> users = new ArrayList<>();
+    private final JdbcTemplate jdbcTemplate;
+
+    public UserController(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @PostMapping("/user")
     public void saveUser(@RequestBody UserCreateRequest request) {
-        users.add(new User(request.getName(), request.getAge()));
+        String sql = "insert into user (name, age) values (?, ?)";
+        jdbcTemplate.update(sql, request.getName(), request.getAge());
     }
 
     @GetMapping("/user")
     public List<UserResponse> getUsers() {
-        List<UserResponse> responses = new ArrayList<>();
+        String sql = "SELECT * FROM user";
 
-        for (int i = 0; i < users.size(); i++) {
-            responses.add(new UserResponse(i + 1, users.get(i)));
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            long id = rs.getLong("id");
+            String name = rs.getString("name");
+            int age = rs.getInt("age");
+
+            return new UserResponse(id, name, age);
+        });
+    }
+
+    @PutMapping("/user")
+    public void updateUser(@RequestBody UserUpdateRequest request) {
+        String readSql = "SELECT * FROM user WHERE id = ?";
+        boolean isUserNotExit
+                = jdbcTemplate.query(readSql, (rs, rowNum) -> 0, request.getId()).isEmpty();
+
+        if (isUserNotExit) {
+            throw new IllegalStateException();
         }
-        return responses;
+
+        String sql = "UPDATE user SET name = ? WHERE id = ?";
+        jdbcTemplate.update(sql, request.getName(), request.getId());
+    }
+
+    @DeleteMapping("/user")
+    public void deleteUser(@RequestParam String name) {
+        String readSql = "SELECT * FROM user WHERE name = ?";
+        boolean isUserNotExit
+                = jdbcTemplate.query(readSql, (rs, rowNum) -> 0, name).isEmpty();
+
+        if (isUserNotExit) {
+            throw new IllegalStateException();
+        }
+
+        String sql = "DELETE FROM user WHERE name = ?";
+        jdbcTemplate.update(sql, name);
     }
 }
