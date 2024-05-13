@@ -1,4 +1,4 @@
-package com.group.libraryapp.dto.calculator.response;
+package com.group.libraryapp.dto.fruit;
 
 import lombok.Getter;
 import lombok.Setter;
