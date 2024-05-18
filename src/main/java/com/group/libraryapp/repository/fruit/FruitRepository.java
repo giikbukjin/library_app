@@ -1,19 +1,17 @@
 package com.group.libraryapp.repository.fruit;
 
-import com.group.libraryapp.dto.fruit.FruitRequest;
+import com.group.libraryapp.domain.fruit.Fruit;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
-public interface FruitRepository {
-    void saveFruit(FruitRequest request);
+public interface FruitRepository extends JpaRepository<Fruit, Long> {
+    List<Fruit> findByName(String name);
 
-    Boolean isFruitNotExitById(FruitRequest request);
+    long countByName(String name);
 
-    Boolean isFruitNotExitByName(String name);
-
-    void fruitUpdate(FruitRequest request);
-
-    long getSoldSum();
-
-    long getNotSoldSum();
+    List<Fruit> findByPriceGreaterThanEqual(Long price);
+    List<Fruit> findByPriceLessThanEqual(Long price);
 }

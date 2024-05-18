@@ -1,12 +1,15 @@
 package com.group.libraryapp.dto.fruit;
 
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class FruitResponse {
     private long salesAmount;
     private long notSalesAmount;
+
+    public FruitResponse(long salesAmount, long notSalesAmount) {
+        this.salesAmount = salesAmount;
+        this.notSalesAmount = notSalesAmount;
+    }
 }
 
